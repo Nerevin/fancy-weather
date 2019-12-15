@@ -1,0 +1,45 @@
+.header-wrapper {
+    display:flex;
+    justify-content: space-around;
+    margin-left: 5%;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding-top: 2%;
+
+    &__change-background {
+        width: 44px;
+        height: 44px;
+
+        border-radius: 5px;
+
+        background: url(../assets/RefreshBG.png)
+    }
+
+    &__change-lang {
+        width: 71px;
+        height: 44px;
+
+        margin-left: 10px;
+    }
+
+    &__change-temperature {
+        display: flex;
+        width: 88px;
+        height: 44px;
+        margin-left: 10px;
+
+        border-radius: 5px;
+
+        button {
+            width: 50%;
+        }
+    }
+
+    &__search {
+        margin-right: 5%;
+    }
+}
