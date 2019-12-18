@@ -1,3 +1,6 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-inner-declarations */
+/* eslint-disable no-undef */
 window.onload = async function() {
     pageGenere();
     changeBG();
@@ -18,11 +21,13 @@ window.onload = async function() {
     this.setDate();
     setInterval(setDate, 60000); 
     this.setWeather(coordinate);
+
+    document.getElementById('searchButton').addEventListener('click', search);
 }
 
 function celToFar() {
-    let temp = document.getElementsByClassName('temp');
-    let feelTemp = document.getElementById('feelTemp');
+    const temp = document.getElementsByClassName('temp');
+    const feelTemp = document.getElementById('feelTemp');
     let feelTempNum = parseInt(feelTemp.textContent.replace(/\D+/g,""));
     if (feelTemp.textContent.includes('-')) {feelTempNum = -feelTempNum}
     feelTemp.innerHTML = 'feels like: ' + Math.round((feelTempNum * 9/5) + 32) + '°';
@@ -38,8 +43,8 @@ function celToFar() {
 }
 
 function farToCel() {
-    let temp = document.getElementsByClassName('temp');
-    let feelTemp = document.getElementById('feelTemp');
+    const temp = document.getElementsByClassName('temp');
+    const feelTemp = document.getElementById('feelTemp');
     let feelTempNum = parseInt(feelTemp.textContent.replace(/\D+/g,""));
     if (feelTemp.textContent.includes('-')) {feelTempNum = -feelTempNum}
     feelTemp.innerHTML = 'feels like: ' + Math.round((feelTempNum - 32) * 5/9) + '°';
@@ -67,10 +72,13 @@ function mapInit(obj) {
 function setCoord(result) {
     const lat = document.getElementById('latitude');
     const long = document.getElementById('longitude');
-    lat.innerHTML = 'Latitude: ' + result[0];
-    long.innerHTML = 'Longitude ' + result[1];
-    let array = [result[0], result[1]];
-    return array;
+    const latGrad = Math.trunc(result[0]);
+    const latMin = Math.trunc((result[0] - latGrad) * 60);
+    const longGrad = Math.trunc(result[1]);
+    const longMin = Math.trunc((result[1] - longGrad) * 60);
+    lat.innerHTML = 'Latitude: ' + latGrad + '°' + latMin + '\'';
+    long.innerHTML = 'Longitude ' + longGrad + '°' + longMin + '\'';
+    return [result[0], result[1]];
 }
 
 function getCoord() {
@@ -84,7 +92,7 @@ function getCoord() {
 }
 
 async function setPosition(obj) {
-    let apikey = '91e869571e4a4405a4cbbf77a1c95581';
+    const apikey = '91e869571e4a4405a4cbbf77a1c95581';
     let latitude = obj.latitude;
     let longitude = obj.longitude;
     
@@ -141,12 +149,36 @@ function setDate() {
     let secondDay;
     let thirdDay;
     const dayArray = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    for (let i = 0; i <dayArray.length; i++) {
+    const monthArray = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    for (let i = 0; i < dayArray.length; i++) {
         if (dayName === i) {
             currentDay = dayArray[i];
-            firstDay = dayArray[i+1];
-            secondDay = dayArray[i+2];
-            thirdDay = dayArray[i+3];
+            if (dayName === 5) {
+                firstDay = dayArray[i+1];
+                secondDay = dayArray[i+2];
+                thirdDay = dayArray[0];
+            }
+            else if (dayName === 6) {
+                firstDay = dayArray[i+1];
+                secondDay = dayArray[0];
+                thirdDay = dayArray[1];
+            }
+            else if (dayName === 7) {
+                firstDay = dayArray[0];
+                secondDay = dayArray[1];
+                thirdDay = dayArray[2];
+            }
+            else {
+                firstDay = dayArray[i+1];
+                secondDay = dayArray[i+2];
+                thirdDay = dayArray[i+3];
+            }
+        }
+    }
+
+    for (let i = 0; i < monthArray.length; i++) {
+        if (month === i) {
+            month = monthArray[i];
         }
     }
 
@@ -156,45 +188,6 @@ function setDate() {
 
     if (minute < 10) {
         minute = '0' + minute;
-    }
-
-    switch (month) {
-        case (0):
-            month = 'January';
-            break;
-        case (1):
-            month = 'February';
-            break;
-        case (2):
-            month = 'March';
-            break;
-        case (3):
-            month = 'April';
-            break;
-        case (4):
-            month = 'May';
-            break;
-        case (5):
-            month = 'June';
-            break;
-        case (6):
-            month = 'July';
-            break;
-        case (7):
-            month = 'August';
-            break;
-        case (8):
-            month = 'September';
-            break;
-        case (9):
-            month = 'October';
-            break;
-        case (10):
-            month = 'November';
-            break;
-        case 11:
-            month = 'December';
-            break;
     }
 
     dateId.innerHTML = day + ' ' + currentDay + ' ' + month + ' ' + hour + ':' + minute;
@@ -283,8 +276,8 @@ function pageGenere() {
 </div>
 <form class="header__search" name="search">
     <p>
-        <input type="search" placeholder="Search city or ZIP" disabled>
-        <input type="submit" value="SEARCH" for="search" disabled>
+        <input type="text" placeholder="Search city" id="searchField">
+        <input type="button" value="SEARCH" for="search" id="searchButton">
     </p>
 </form>
 </header>
@@ -336,4 +329,57 @@ function pageGenere() {
 </main>
 `;
     document.getElementById('app').innerHTML = mainMarkUp;
+}
+
+function search() {
+    let input = document.getElementById('searchField').value;
+    const apikey = '91e869571e4a4405a4cbbf77a1c95581';
+    let coordinate = {
+        latitude: 0,
+        longitude: 0,
+    }
+
+    let api_url = 'https://api.opencagedata.com/geocode/v1/json'
+    let request_url = api_url
+    + '?'
+    + 'key=' + apikey
+    + '&q=' + encodeURIComponent(input)
+    + '&language=en'
+    + '&pretty=1'
+    
+    let request = new XMLHttpRequest();
+    request.open('GET', request_url, true);
+    
+    request.onload = function() {
+        if (request.status == 200){
+          let city = document.getElementById('city');
+          let data = JSON.parse(request.responseText);
+          jsonArray = [data.results[0].geometry.lat, data.results[0].geometry.lng];
+          city.innerHTML = input + ', ' + data.results[0].components.country;
+          coordinate.latitude = data.results[0].geometry.lat,
+          coordinate.longitude = data.results[0].geometry.lng,
+          mapInit(coordinate);
+          const lat = document.getElementById('latitude');
+          const long = document.getElementById('longitude');
+          const latGrad = Math.trunc(coordinate.latitude);
+          const latMin = Math.trunc((coordinate.latitude - latGrad) * 60);
+          const longGrad = Math.trunc(coordinate.longitude);
+          const longMin = Math.trunc((coordinate.longitude - longGrad) * 60);
+          lat.innerHTML = 'Latitude: ' + latGrad + '°' + latMin + '\'';
+          long.innerHTML = 'Longitude ' + longGrad + '°' + longMin + '\''; 
+          setWeather(coordinate);              
+            } else if (request.status <= 500){                                
+              console.log("unable to geocode! Response code: " + request.status);
+              let data = JSON.parse(request.responseText);
+              console.log(data.status.message);
+            } else {
+              console.log("server error");
+            }
+          };
+    
+          request.onerror = function() {
+            console.log("unable to connect to server");        
+          };
+        
+        request.send();
 }
